@@ -9,15 +9,47 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import './Login.css';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import Snackbar from '@mui/material/Snackbar';
+import CloseIcon from '@mui/icons-material/Close';
 import Modal from '@mui/material/Modal';
+import Alert from '@mui/material/Alert';
+import CheckIcon from '@mui/icons-material/Check';
 
 const Login = () => {
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [email, setEmail] = useState(''); // Changed variable name to email
   const [password, setPassword] = useState('');
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [fpopen, setfpopen] = useState(false);
+  const[churchName,setchurchname]=useState('caaalval');
   const navigate = useNavigate();
+
+  // snackbar started
+  // const handleClick = () => {
+  //   setfpopen(true);
+  // };
+
+  const handleClose = () => {
+    setfpopen(false);
+  };
+  const action = (
+    <React.Fragment>
+      {/* <Button color="secondary" size="small" onClick={handleClose}>
+        UNDO
+      </Button> */}
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+  // Snackbar ended
 
   const showToast = (icon, title, text) => {
     Swal.fire({
@@ -46,26 +78,43 @@ const Login = () => {
 
     try {
       const data = {
-        identifier: loginIdentifier,
+        userName: loginIdentifier,
         password,
+        churchName:churchName,
       }
-      const response = await axios.post('http://localhost:9999/user/api/login', data);
-      if (response.status === 200) {
+      const response = await axios.post('http://localhost:9999/user/login', data);
+      if (response.status === 200 && response.data.designation==='Super Admin') {
+        console.log(response);
         showToast('success', 'Login Successful!');
-        const userDetails = response.data.user; 
-        console.log('User Details:', response.data); 
-        const Id = response.data.id; 
-        console.log('User ID:', Id); 
+        const userDetails = response.data.user;
+        const role = response.data.designation;
+        console.log('User Details:', response.data);
+        const Id = response.data.id;
+        console.log('User ID:', Id);
         const PasswordReset = response.data.passwordReset
-        console.log('reset',PasswordReset );
+        console.log('reset', PasswordReset);
         const Email = response.data.email;
         console.log('email', Email);
-        localStorage.setItem('PasswordReset', PasswordReset)
-        localStorage.setItem('Id', Id);
-        localStorage.setItem('email', Email);
-
+        sessionStorage.setItem('PasswordReset', PasswordReset)
+        sessionStorage.setItem('Id', Id);
+        sessionStorage.setItem('email', Email);
+        sessionStorage.setItem('role', role);
         navigate('/Dashboard');
-      } else {
+      }else if (response.status === 200 && response.data.designation==='Admin') {
+        console.log(response);
+        showToast('success', 'Login Successful!');
+        const userDetails = response.data.user;
+        const role = response.data.designation;
+        const Id = response.data.id;
+        const PasswordReset = response.data.passwordReset
+        const Email = response.data.email;
+        sessionStorage.setItem('PasswordReset', PasswordReset);
+        sessionStorage.setItem('Id', Id);
+        sessionStorage.setItem('email', Email);
+        sessionStorage.setItem('role', role);
+        navigate('/Dashboard');
+      }
+       else {
       }
     } catch (error) {
       console.error('Error logging in:', error);
@@ -96,18 +145,22 @@ const Login = () => {
     try {
       const formData = new FormData();
       formData.append('email', email);
-    
-      const response = await axios.post('http://localhost:9999/user/api/forgotPwd', formData);
+      setIsLoading(true);
+      const response = await axios.post('http://localhost:9999/user/forgotPwd', formData);
       if (response.status === 200) {
-        showToast('Password reset successful Check your email for the new password');
+        setfpopen(true);
+        setIsLoading(false);
+        // showToast('Password reset successful Check your email for the new password');
+
       } else {
         showToast('error', 'Error', response.data); // Changed to response.data
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error sending email:', error);
       showToast('error', 'Error', error.response.data);
     }
-    
+
     setOpen(false);
   };
 
@@ -149,6 +202,25 @@ const Login = () => {
 
   return (
     <div className="total_container">
+      {fpopen && (
+        <div style={{ display: "flex", justifyContent: "end" }}>
+          <div>
+            {/* <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
+      Password reset successful Check your email for the new password
+    </Alert> */}
+            <Snackbar
+              open={fpopen}
+              autoHideDuration={3000}
+              message="Password reset successful Check your email for the new password"
+              action={action}
+              onClose={() => setfpopen(false)}
+              style={{
+                position: "relative", top: "0px", left: "0px"
+              }}
+            />
+          </div>
+        </div>
+      )}
       <div className="login-box">
         <h2 style={{ color: "white" }}>Login Page</h2>
         <form onSubmit={handleLoginSubmit}>
@@ -203,29 +275,36 @@ const Login = () => {
         </form>
         <br />
       </div>
-
-      <Modal open={open} onClose={handleCloseModal}>
-        <div style={{ backgroundColor: "white", width: 400, padding: 20, borderRadius: 5, margin: "auto", marginTop: 200 }}>
-          <h2 style={{ textAlign: "center" }}>Forgot Password?</h2><br/>
-          <TextField
-            style={{ width: "52vh" }}
-            id="forgot-password-email"
-            label="Email"
-            variant="standard"
-            value={email}
-            onChange={handleForgotPasswordEmailChange}
-            InputLabelProps={{ style: { color: 'black', fontWeight: 'bold', marginLeft: "1cm" } }}
-            InputProps={{ style: { fontSize: '1.2rem', color: "black", marginLeft: "1cm" } }}
-            required
-          /><br/><br/>
-          <div style={{ textAlign: "center" }}>
-          <Button variant='contained' onClick={handleSendEmail}>Submit</Button>
-                <Button variant='contained' onClick={handleCloseModal} style={{ marginLeft: "3px" }}>Cancel</Button>
-            {/* <button type='button' onClick={handleSendEmail} style={{ marginRight: 10 }}>Submit</button>
-            <button type='button' onClick={handleCloseModal}>Cancel</button> */}
+      {isLoading ? (
+        <Modal open={open} onClose={handleCloseModal}>
+          <div style={{ backgroundColor: "white", width: 400, padding: 20, borderRadius: 5, margin: "auto", marginTop: 120 }}>
+            <img src='https://upload.wikimedia.org/wikipedia/commons/c/c7/Loading_2.gif' style={{ width: "50px", height: "50px",marginLeft:"170px" }} alt='loader' />
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      ) : (
+        <Modal open={open} onClose={handleCloseModal}>
+          <div style={{ backgroundColor: "white", width: 400, padding: 20, borderRadius: 5, margin: "auto", marginTop: 120 }}>
+            <h4 style={{ textAlign: "center" }}>Forgot Password?</h4>
+            <TextField
+              style={{ width: "52vh" }}
+              id="forgot-password-email"
+              label="Email"
+              variant="standard"
+              value={email}
+              onChange={handleForgotPasswordEmailChange}
+              InputLabelProps={{ style: { color: 'black', marginLeft: "1cm" } }}
+              InputProps={{ style: { fontSize: '1.2rem', color: "black", marginLeft: "1cm" } }}
+              required
+            /><br /><br />
+            <div style={{ textAlign: "center" }}>
+              <Button variant='contained' onClick={handleSendEmail}>Submit</Button>
+              <Button variant='contained' onClick={handleCloseModal} style={{ marginLeft: "3px" }}>Cancel</Button>
+              {/* <button type='button' onClick={handleSendEmail} style={{ marginRight: 10 }}>Submit</button>
+            <button type='button' onClick={handleCloseModal}>Cancel</button> */}
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

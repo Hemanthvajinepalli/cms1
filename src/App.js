@@ -7,7 +7,7 @@ import SubscriptionList from './Dashboard/SubscriptionList';
 import Services from './Dashboard/Services';
 import Entity from './Dashboard/Entity';
 import Login from './Login';
-
+import AdminDashboard from './Dashboard/AdminDashboard';
 function App() {
   return (
         <Routes>
@@ -18,6 +18,7 @@ function App() {
           <Route path="/Entity" element={<Entity />} />
           <Route path="/SubscriptionList" element={<SubscriptionList />} />
           <Route path="/Services" element={<Services />} />
+          <Route path='/Admin' element={<AdminDashboard/>}/>
           {/* <Route path='/calendar' element={<MyApp/>}/> */}
         </Routes>
   );

@@ -36,7 +36,7 @@ export default function GalleryCard() {
 
 
   React.useEffect(()=>{
-    fetch('http://localhost:9999/api/church/all')
+    fetch('http://localhost:9999/church/all')
     .then(res=>res.json())
     .then(data=>{
         setData(data);

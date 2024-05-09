@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
+import noimage from '../images/noimage.jpg';
 
 
 
@@ -31,9 +32,10 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: 800,
   bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
+  boxShadow: 20,
+  p: 3,
+  borderRadius: 2,
+  paddingLeft: 11,
 };
 
 export default function MediaCard() {
@@ -60,58 +62,118 @@ export default function MediaCard() {
   const [showMobileInput, setShowMobileInput] = React.useState(false);
   const [mobotp, setMobotp] = React.useState('');
   const [seperate, setseperate] = React.useState([]);
-  const[seperateuser,setseperateuser]=React.useState([]);
+  const [seperateimage, setseperateimage] = React.useState([]);
+  const[profileimage,setprofileimage]=React.useState(null);
   const churchid = localStorage.getItem("entityid");
-  const userid=localStorage.getItem("userId");
-  const updateentity = async (updated) => {
-    try {
-      const details = updated;
+  const userid = localStorage.getItem("userId");
+  const [selectedFileName, setSelectedFileName] = React.useState('');
 
-      const response = await axios.put(`http://localhost:9999/api/church/update/${churchid}`, details, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+  const superid=sessionStorage.getItem('Id');
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFileName(file);
+  };
+  const updateentity = async () => {
+    try {
+      const form ={
+    
+        address1,
+        address2,
+        street,
+        state,
+        pincode,
+        adminName,
+        designation,
+        
+      }
+      
+      const formData = new FormData();
+    formData.append('churchEntity', new Blob([JSON.stringify({
+      firstName: form.adminName,
+      designation: form.designation,
+      address1:form.address1,
+      address2:form.address2,
+      street:form.street,
+      state:form.state,
+      pincode:form.pincode,
+    })], { type: 'application/json' }));
+  
+    formData.append('file', selectedFileName);
+
+      const response = await fetch(`http://localhost:9999/church/updateUser/${churchid}`, {
+        method: 'PUT',
+        body: formData,
       });
 
       // Handle response as needed
+      console.log(response);
       console.log('Entity updated successfully:', response.data);
       alert("updated successfully");
+      setSelectedFileName('');
+      const imageresponse=await fetch(`http://localhost:9999/church/view/image/${churchid}`);
+        async function fetchimage(){
+      const blob = await imageresponse.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === churchid ? { ...item, imagedata: imageUrl } : item
+        ));
+        console.log(data);
+      }
+      fetchimage();
     } catch (error) {
       // Handle error
       console.error('Error updating entity:', error);
     }
+   
   };
 
-  const handleopen = async (entityid,userId) => {
+  const handleopen = async (entityid, userId) => {
     localStorage.setItem("entityid", entityid);
-    localStorage.setItem("userId",userId);
+    localStorage.setItem("userId", userId);
     setopen(true);
-    const response = await axios.get(`http://localhost:9999/api/church/${churchid}`);
+    const response = await axios.get(`http://localhost:9999/church/get/${churchid}`);
     const seperatechurch = response.data;
+    console.log(seperatechurch.name);
+    setName(seperatechurch.name);
+    setLine1(seperatechurch.address1);
+    setLine2(seperatechurch.address2);
+    setCity(seperatechurch.street);
+    setCountry(seperatechurch.pincode);
+    setTown(seperatechurch.town);
+    setDistrict(seperatechurch.district);
+    setState(seperatechurch.state);
     setseperate(seperatechurch);
+    console.log(seperatechurch.image);
 
-    const response1 = await axios.get(`http://localhost:9999/user/api/getByUser/${userid}`);
-    const seperateuser=response1.data;
-    setseperateuser(seperateuser);
-    console.log(seperateuser);
-    console.log(seperatechurch);
+    const response1 = await axios.get(`http://localhost:9999/user/getByUser/${userid}`);
+    const seperateuser = response1.data;
+    console.log(seperateuser.firstName);
+    setAdminName(seperateuser.firstName);
+    setDesignation(seperateuser.designation);
+    setMobile(seperateuser.phoneNumber);
+    setEmail(seperateuser.email);
 
   }
   const handleClose = () => setopen(false);
 
 
   React.useEffect(() => {
-    fetch('http://localhost:9999/api/church/all')
+    fetch(`http://localhost:9999/church/${superid}`)
       .then(response => response.json())
       .then(value => setData(value))
       .catch(error => console.error('Error fetching data:', error));
-  }, []);
+  }, [superid]);
+
+  const handleButtonClick = () => {
+    document.getElementById('contained-button-file').click();
+  };
 
   return (
     <>
       <div>
         <Grid container spacing={4}>
-          {/* Render empty card if no data */}
           {data.length === 0 && (
             <Grid item xs={12} sm={6} md={3}>
               <StyledCard>
@@ -123,20 +185,22 @@ export default function MediaCard() {
               </StyledCard>
             </Grid>
           )}
-          {/* Render cards if data is available */}
           {data.map((value) => (
             <>
               <Grid item xs={12} sm={6} md={3} key={value.id}>
-                <StyledCard onClick={() => handleopen(value.id,value.userId)}>
+                <StyledCard onClick={() => handleopen(value.id, value.userId)}>
                   <CardMedia
-                    component={value.image? "img" : ""}
+                    component={value.image ? "img" : ""}
                     height="160"
                     image={value.image ? value.image : "No Image"}
-                    title={value.image? "Click here for more details" : "Click here for more details"}
-                    style={{ width: '260px', height: '110px',backgroundColor:"gray",color:"white" }}
-                    alt={value.image?"Images":"No Image"}
-                    onError={"No Image"}
+                    title={value.image ? "Click here for more details" : "Click here for more details"}
+                    style={{ width: '260px', height: '110px', backgroundImage: `url(${noimage})`, color: "white" }}
+                    alt={value.image ? "Images" : "No Image"}
+                    // onError={"No Image"}
                   />
+                  {/* <CardMedia>
+                    <img src={value.imagedata} />
+                  </CardMedia> */}
                   <CardContent>
                     <Typography gutterBottom variant="h5" component="div" style={{ textAlign: 'center', fontSize: '15px', fontFamily: 'sans-serif' }}>
                       {value.name}
@@ -156,44 +220,46 @@ export default function MediaCard() {
             <Box sx={style}>
               <Typography style={{ fontWeight: "bold", textAlign: "center" }}>
                 ENTITY FORM
-              </Typography>
-              <TextField id="standard-basic" value={seperate.name} label="Name of the Entity" variant="standard" style={{ paddingRight: "10px" }} />
-              {/* <TextField id="standard-basic" value={seperate.address} onChange={(e)=>setseperate(e.target.value)} label="Address" variant="standard" style={{ paddingRight: "10px" }} /> */}
-              <TextField id="standard-basic" value={seperate.address1} onChange={(e) => setseperate(e.target.value)} label="Line1" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperate.address2} onChange={(e) => setseperate(e.target.value)} label="Line2" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperate.town} onChange={(e) => setseperate(e.target.value)} label="Town" variant="standard" style={{ paddingRight: "10px" }} />
-              {/* <TextField id="standard-basic" value={seperate.district} onChange={(e)=>setseperate(e.target.value)} label="District" variant="standard" style={{ paddingRight: "10px" }} /> */}
-              <TextField id="standard-basic" value={seperate.street} onChange={(e) => setseperate(e.target.value)} label="Street" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperate.state} onChange={(e) => setseperate(e.target.value)} label="State" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperate.pincode} onChange={(e) => setseperate(e.target.value)} label="Pincode" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperateuser.firstName} label="Administrator Name" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperateuser.designation} onChange={(e) => setseperate(e.target.value)} label="Designation" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperateuser.email} onChange={(e) => setseperate(e.target.value)} label="Email" variant="standard" style={{ paddingRight: "10px" }} />
-              <TextField id="standard-basic" value={seperateuser.phoneNumber} onChange={(e) => setseperate(e.target.value)} label="Mobile" variant="standard" style={{ paddingRight: "10px" }} />
+              </Typography> <br/>
+              <TextField id="standard-basic" value={name} label="Name of the Entity" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={address1} onChange={(e) => setLine1(e.target.value)} label="Line1" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={address2} onChange={(e) => setLine2(e.target.value)} label="Line2" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={town} onChange={(e) => setTown(e.target.value)} label="Town" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={street} onChange={(e) => setCity(e.target.value)} label="Street" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={state} onChange={(e) => setState(e.target.value)} label="State" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={pincode} onChange={(e) => setCountry(e.target.value)} label="Pincode" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={adminName} label="Administrator Name" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={designation} onChange={(e) => setDesignation(e.target.value)} label="Designation" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={email}  label="Email" variant="standard" style={{ paddingRight: "10px" }} />
+              <TextField id="standard-basic" value={contactNumber}  label="Mobile" variant="standard" style={{ paddingRight: "10px" }} />
               <TextField
                 id="contained-button-file"
                 type="file"
                 inputProps={{ accept: 'image/jpeg' }}
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  try{
-                  const response= axios.put(`http://localhost:9999/api/church/update/${churchid}`,file);
-                  console.log(response);
-                  }catch(error){
-                    console.log(error);
-                  }
-                }}
-                label="Upload Image"
+                onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
-              <label htmlFor="contained-button-file">
-                <Button variant="contained" component="span" style={{marginTop:"10px"}}>
-                  Upload Image
-                </Button>
-              </label>
-              <div style={{ display: "flex", justifyContent: "end", marginTop: "30px" }}>
-                <Button variant='contained' onClick={() => updateentity(seperate)}>Update</Button>
-                <Button variant='contained' onClick={handleClose} style={{ marginLeft: "3px" }}>Cancel</Button>
+              <Button
+          variant="contained"
+          component="span"
+          style={{
+            marginTop: '26px',
+            padding: '2px',
+            fontSize: '10px',
+            color: 'white',            
+            backgroundColor: selectedFileName ? 'green' : 'rgba(17,106,162,255)'
+          }}
+          onClick={handleButtonClick}
+        >
+          {selectedFileName ? 'Uploaded' : 'Upload Image'}
+        </Button>
+      {/* {selectedFileName && (
+        <p style={{ color: 'green' }}>{selectedFileName} uploaded</p>
+      )} */}
+              
+              <div style={{ display: "flex",justifyContent:"end",paddingRight:"80px", marginTop: "30px" }}>
+                <Button variant='contained' onClick={() => updateentity(seperate)} style={{padding: "2px", fontSize: "10px"}}>Update</Button>
+                <Button variant='contained' onClick={handleClose} style={{ marginLeft: "3px", padding: "2px", fontSize: "10px" }}>Cancel</Button>
               </div>
             </Box>
           </Modal>

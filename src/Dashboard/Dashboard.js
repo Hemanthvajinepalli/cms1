@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Modal, Paper, TextField, Button } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -19,7 +20,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { MDBFooter } from 'mdb-react-ui-kit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Advertisement from './Advertisement';
@@ -48,6 +49,12 @@ import PermMediaIcon from '@mui/icons-material/PermMedia';
 import Swal from 'sweetalert2';
 import "./Dashboard.css";
 import SuperAdmindashboard from './SuperAdmindashBoard';
+import AdminHome from './Adminhome';
+import CircleNotificationsIcon from '@mui/icons-material/CircleNotifications';
+import GradingIcon from '@mui/icons-material/Grading';
+import AddLinkIcon from '@mui/icons-material/AddLink';
+import UpdateIcon from '@mui/icons-material/Update';
+import Collections from '@mui/icons-material/Collections';
 
 const drawerWidth = 160;
 
@@ -150,6 +157,8 @@ const DashboardContent = ({ selectedItem }) => {
   switch (selectedItem) {
     case 'Home':
       return <SuperAdmindashboard />;
+      case 'AdminHome':
+      return <AdminHome/>;
     case 'Entity':
       return <FullWidthGrid />;
     case 'Subscription':
@@ -165,7 +174,7 @@ const DashboardContent = ({ selectedItem }) => {
     case 'Services':
       return <Services />;
     case 'Gallery':
-      return <Gallerydisplay/>;
+      return <Gallerydisplay />;
     case 'Media':
       return <FullWidthGrid />;
     case 'Drafts':
@@ -184,10 +193,23 @@ export default function Dashboard() {
   const [confirmPwd, setConfirmPwd] = useState('');
   const [email, setEmail] = useState('');
   const [openForgotModal, setOpenForgotModal] = useState('');
-  const[sdetails,setSdetails]=useState([]);
-  const loggedin=localStorage.getItem('Id');
+  const [sdetails, setSdetails] = useState([]);
+  const loggedin = localStorage.getItem('Id');
+  const [previewImage, setPreviewImage] = useState(null);
+  const [openProfileModal, setOpenProfileModal] = useState(false);
+  const [profileimage, setprofileimage] = React.useState('');
+  const [user, setUser] = useState('');
+  const fileInputRef = useRef(null);
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    secondName: '',
+    email: '',
+    phoneNumber: '',
+    designation: '',
+  });
 
-
+  const role = sessionStorage.getItem("role");
+  const navigate = useNavigate();
 
   const handleCloseUserMenu = () => {
     setAnchorElUser();
@@ -199,8 +221,6 @@ export default function Dashboard() {
     if (clickedItem === 'Change password') {
       Swal.fire({
         title: 'Change Password',
-        text: 'Do you want to change your password?',
-        icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Yes',
         cancelButtonText: 'No'
@@ -209,7 +229,13 @@ export default function Dashboard() {
           setOpenForgotModal(true);
         }
       });
-    } else {
+    } else if (clickedItem === 'Logout') {
+      sessionStorage.clear();
+      navigate('/');
+    } else if (clickedItem === 'profile') {
+      handleOpenProfileModal();
+    }
+    else {
       setAnchorElUser(event.currentTarget);
     }
   };
@@ -219,18 +245,18 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    fetch(`http://localhost:9999/user/api/getByUser/${loggedin}`)
-    .then(response=>response.json())
-    .then(value=>setSdetails(value))
+    fetch(`http://localhost:9999/church/get/${loggedin}`)
+      .then(response => response.json())
+      .then(value => setSdetails(value))
     document.body.style.overflow = 'hidden';
-
+    fetchData();
     return () => {
       document.body.style.overflow = 'auto';
     };
   }, []);
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const [selectedItem, setSelectedItem] = React.useState('Home');
+  const [selectedItem, setSelectedItem] = React.useState('');
   const [error, setError] = useState('');
 
   const handleDrawerOpen = () => {
@@ -246,8 +272,6 @@ export default function Dashboard() {
     if (passwordReset !== 'true') {
       Swal.fire({
         title: 'Password Reset Required',
-        text: 'Do you want to reset your password?',
-        icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Yes',
         cancelButtonText: 'No'
@@ -282,7 +306,7 @@ export default function Dashboard() {
   const handleUpdate = () => {
     const email = localStorage.getItem('email');
     setEmail(email)
-;
+      ;
 
     if (!email || !password || !newPassword || !confirmPwd) {
       showToast('error', 'Error', 'Please fill in all the fields.');
@@ -301,7 +325,7 @@ export default function Dashboard() {
       confirmPwd: confirmPwd,
     };
 
-    fetch('http://localhost:9999/user/api/resetPassword', {
+    fetch('http://localhost:9999/user/resetPassword', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -335,20 +359,109 @@ export default function Dashboard() {
   const handleCloseForgot = () => {
     setOpenForgotModal(false);
   };
+  // profile start
+  const handleOpenProfileModal = () => {
+    setOpenProfileModal(true);
+  };
+  const handleCloseProfileModal = () => {
+    setOpenProfileModal(false);
+  };
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setProfileData({ ...profileData, image: file });
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`http://localhost:9999/user/getByUser/${loggedin}`);
+      const data = await response.json();
+      setProfileData(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('user', new Blob([JSON.stringify({
+        firstName: profileData.firstName,
+        secondName: profileData.secondName,
+        designation: profileData.designation,
+      })], { type: 'application/json' }));
 
 
+      formData.append('file', profileData.image);
+
+
+
+      const response = await fetch(`http://localhost:9999/user/updateProfile/${loggedin}`, {
+        method: 'PUT',
+        body: formData,
+
+      });
+      if (response.status === 200) {
+        const imageresponse = await fetch(`http://localhost:9999/user/view/image`);
+        async function fetchimage() {
+          const blob = await imageresponse.blob();
+          const imageUrl = URL.createObjectURL(blob);
+          setprofileimage(imageUrl);
+          return () => {
+            if (profileimage) {
+              URL.revokeObjectURL(profileimage);
+            }
+          };
+
+        }
+        fetchimage();
+        alert("updated successfully");
+        console.log(response.body);
+      }
+      console.log(response.data);
+
+      handleCloseProfileModal();
+    } catch (error) {
+      console.error('Error updating data:', error);
+    }
+  };
+  // profile end
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', overflow: 'hidden', maxHeight: 'calc(100vh - 120px)' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', minHeight: '100vh', overflow: 'hidden', maxHeight: 'calc(100vh - 120px)' }}>
         <Marquee>
+          {role==='Super Admin' && (
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, marginLeft: "35%", marginTop: "1%" }}>
-            Welcome to Super Admin Dashboard!
+            Welcome to Super Admin Dashboard
           </Typography>
-          <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "-5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
+          )}
+          {role==='Admin' && (
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, marginLeft: "35%", marginTop: "1%" }}>
+            Welcome to Admin Dashboard
+          </Typography>
+          )}
+          {role==='Super Admin' && (
+          <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
             <b>{sdetails.firstName}</b> <br />
             {new Date().toLocaleString()}
           </Typography>
+          )}
+          {role==='Admin' && (
+          <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
+            <b>Admin Nmae</b> <br />
+            {new Date().toLocaleString()}
+          </Typography>
+          )}
+{/* SuperAdmin userdropdown */}
+          {role==='SuperAdmin' && (
+            <>
           <IconButton
             aria-label="account of current user"
             aria-controls="menu-appbar"
@@ -379,8 +492,202 @@ export default function Dashboard() {
                 {item}
               </MenuItem>
             ))}
-
+            <Modal
+              open={openProfileModal}
+              onClose={handleCloseProfileModal}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Paper sx={{ position: 'absolute', width: 800, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+                <Typography variant="h6" component="h2" gutterBottom>
+                  <h3 style={{ textAlign: "center" }}>Profile Details</h3>
+                </Typography>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="fname"
+                    label="First Name"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  />
+                  <TextField
+                    id="sname"
+                    label="Second Name"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.secondName}
+                    onChange={(e) => setProfileData({ ...profileData, secondName: e.target.value })}
+                  />
+                  <TextField
+                    id="email"
+                    label="Email"
+                    type="email"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.email}
+                    disabled
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="phn"
+                    label="Phone Number"
+                    type="number"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.phoneNumber}
+                    disabled
+                  />
+                  <TextField
+                    id="designation"
+                    label="Designation"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%', marginLeft: "0.2cm" }}
+                    value={profileData.designation}
+                    onChange={(e) => setProfileData({ ...profileData, designation: e.target.value })}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '33.33%', marginTop: "0.7cm" }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ marginBottom: '0.5rem', marginLeft: "0.3cm" }}
+                      ref={fileInputRef}
+                    />
+                    {previewImage && (
+                      <div style={{ width: '35px', height: '35px', overflow: 'hidden', borderRadius: '50%', marginLeft: "5cm", marginTop: "-1cm" }}>
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <br />
+                <Button variant='contained' onClick={handleUpdateProfile} style={{ marginLeft: "6cm" }}>Update</Button>
+                <Button variant='contained' onClick={handleCloseProfileModal} style={{ marginLeft: "1cm" }}>Cancel</Button>
+              </Paper>
+            </Modal>
           </Menu>
+          </>
+          )}
+          {/* Admin userdropdown */}
+          {role==='Admin' && (
+            <>
+          <IconButton
+            aria-label="account of current user"
+            aria-controls="menu-appbar"
+            aria-haspopup="true"
+            onClick={handleOpenUserMenu}
+            color="inherit"
+            style={{ marginTop: "20px" }}
+          >
+            <AccountCircleIcon style={{ width: "35px", height: "35px" }} />
+            <ArrowDropDownIcon />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorElUser}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorElUser)}
+            onClose={handleCloseUserMenu}
+          >
+            {settings.map((item, index) => (
+              <MenuItem key={index} onClick={(event) => handleOpenUserMenu(event, index)}>
+                {item}
+              </MenuItem>
+            ))}
+            <Modal
+              open={openProfileModal}
+              onClose={handleCloseProfileModal}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Paper sx={{ position: 'absolute', width: 800, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+                <Typography variant="h6" component="h2" gutterBottom>
+                  <h3 style={{ textAlign: "center" }}>Profile Details</h3>
+                </Typography>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="fname"
+                    label="First Name"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  />
+                  <TextField
+                    id="email"
+                    label="Email"
+                    type="email"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.email}
+                    disabled
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="phn"
+                    label="Phone Number"
+                    type="number"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.phoneNumber}
+                    disabled
+                  />
+                  <TextField
+                    id="designation"
+                    label="Designation"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%', marginLeft: "0.2cm" }}
+                    value={profileData.designation}
+                    onChange={(e) => setProfileData({ ...profileData, designation: e.target.value })}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '33.33%', marginTop: "0.7cm" }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ marginBottom: '0.5rem', marginLeft: "0.3cm" }}
+                      ref={fileInputRef}
+                    />
+                    {previewImage && (
+                      <div style={{ width: '35px', height: '35px', overflow: 'hidden', borderRadius: '50%', marginLeft: "5cm", marginTop: "-1cm" }}>
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <br />
+                <Button variant='contained' onClick={handleUpdateProfile} style={{ marginLeft: "6cm" }}>Update</Button>
+                <Button variant='contained' onClick={handleCloseProfileModal} style={{ marginLeft: "1cm" }}>Cancel</Button>
+              </Paper>
+            </Modal>
+          </Menu>
+          </>
+          )}
         </Marquee>
 
         <CssBaseline />
@@ -412,8 +719,9 @@ export default function Dashboard() {
           </DrawerHeader>
           <Divider />
           <div >
+            {/* SuperAdmin sidebar */}
             <List >
-              {['Home','Entity', 'Subscription', 'Services', 'Reports'].map((text, index) => (
+              {/* {['Home','Entity', 'Subscription', 'Services', 'Reports'].map((text, index) => (
                 <ListItem key={text} disablePadding sx={{ display: 'block' }}>
                   <ListItemButton
                     onClick={() => setSelectedItem(text)}
@@ -441,9 +749,548 @@ export default function Dashboard() {
                     <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
                   </ListItemButton>
                 </ListItem>
-              ))}
+              ))} */}
+              {role === 'Super Admin' && (
+                <>
+                  <ListItem key='Home' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Home')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Home' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <HomeIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Home' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Entity' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Entity')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Entity' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <EntityIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Entity' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Subscription' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Subscription')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Subscription' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <SubscriptionIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Subscription' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Services' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Services')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Services' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <BusinessIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Services' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Reports' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Reports')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Reports' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AssessmentIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='List' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('List')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'List' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ListIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='List' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <Divider />
+                  <ListItem key='Choir' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Choir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Choir' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <MusicVideoIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Choir' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Marketing' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Marketing')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Marketing' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <TrendingUpIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Marketing' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Gallery' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Gallery')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Gallery' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CollectionsIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Gallery' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Media' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Media')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Media' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <PermMediaIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Media' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='LogOff' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('LogOff')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'LogOff' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ExitToAppIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='LogOff' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
             </List>
-            <Divider />
+            {/* Admin Sidebar */}
+            {role === 'Admin' && (
+                <>
+                  <ListItem key='AdminHome' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('AdminHome')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'AdminHome' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <HomeIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Home' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Services' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Services')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Services' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <BusinessIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Services' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Reports' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Reports')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Reports' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AssessmentIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Requests' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Requests')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Requests' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <GradingIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Requests' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='RequestStatus' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('RequestStatus')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'RequestStatus' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <UpdateIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='RequestStatus' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='List' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('List')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'List' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ListIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='List' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <Divider />
+                  <ListItem key='Choir' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Choir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Choir' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <MusicVideoIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Choir' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Notifications' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Choir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Notifications' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CircleNotificationsIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Notifications' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Online' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Online')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Online' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AddLinkIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Online' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Marketing' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Marketing')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Marketing' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <TrendingUpIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Marketing' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Gallery' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Gallery')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Gallery' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CollectionsIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Gallery' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Media' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Media')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Media' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <PermMediaIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Media' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='LogOff' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('LogOff')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'LogOff' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ExitToAppIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='LogOff' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
+            {/* <Divider />
             <List >
               {['Choir', 'List', 'Marketing', 'Gallery', 'Media', 'LogOff'].map((text, index) => (
                 <ListItem key={text} disablePadding sx={{ display: 'block' }}>
@@ -476,13 +1323,14 @@ export default function Dashboard() {
                 </ListItem>
               ))}
             </List>
-            <Divider />
+            <Divider /> */}
           </div>
         </Drawer>
-        <Box component="main" sx={{ flexGrow: 1, pt: 1 }}>
+        <Box component="main" sx={{ flexGrow: 1, pt: 1 }} style={{ overflowY: "auto", maxHeight: "calc(95vh - 3cm)" }}>
+          {/* <AdminHome/> */}
           <DashboardContent selectedItem={selectedItem} />
         </Box>
-       
+
         <AdvertisementWrapper>
           <Advertisement />
         </AdvertisementWrapper>
