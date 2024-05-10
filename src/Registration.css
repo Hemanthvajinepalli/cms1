@@ -1,0 +1,45 @@
+
+.form-container{
+    position: absolute;
+    top: 10%;
+    left: 20%;
+    right: 10%;
+    bottom: 10%;
+  }
+
+  .register-form {
+    /* Other styles */
+    position: relative;
+    width: 60%;
+    margin: auto;
+    backdrop-filter: blur(20px); 
+    border-radius: 10px;
+    padding: 20px;
+  }
+  /* .register-container{
+    background-image: url(https://img.freepik.com/free-photo/3d-rendering-cross-water_23-2150913570.jpg?t=st=1714733634~exp=1714737234~hmac=ac1b2dc63e0b73070c235637abd7329d2730e10156edc6f20ea21fdf259d064c&w=1060);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  } */
+  
+/*  
+  .register-container{
+    background-image: url(https://img.freepik.com/free-photo/view-3d-religious-cross-blue-room_23-2150945893.jpg?t=st=1715061163~exp=1715064763~hmac=b7c278b42cbfd2bae8edd8e611df3cd6a0b9bcfdf521fa2b3eb4da0325efee2a&w=1060);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  } */
+
+  
+  .register-container{
+    background-image: url(https://img.freepik.com/free-photo/view-simple-3d-religious-cross_23-2151179732.jpg?t=st=1715072561~exp=1715076161~hmac=80ec3c92caea7d25a84c7fca00fec7f354da971c193d04071896f1954b4ec1b9&w=996);
+    background-repeat: no-repeat;
+    /* background-position: center; */
+    background-position: center;
+    background-size: cover;
+  }
+
+  .register-form {
+    margin-top: 8% !important;
+}

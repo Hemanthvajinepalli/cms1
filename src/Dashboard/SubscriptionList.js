@@ -1,6 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -9,8 +11,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { MenuItem, Select, Paper } from '@mui/material';
-import axios from 'axios';
+import { MenuItem, Select, Paper, Switch, FormControlLabel } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -39,16 +40,26 @@ const SubscriptionList = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptionCards, setSubscriptionCards] = useState([]);
+  const [editedSubscription, setEditedSubscription] = useState({
+    amount: '',
+    discount: '',
+    totalAmount: '',
+  });
 
   const handleChange = (event) => {
     setValidity(event.target.value);
   };
 
   useEffect(() => {
-    const userIdFromSessionStorage = sessionStorage.getItem("Id");
-    if (userIdFromSessionStorage) {
-      setUserId(userIdFromSessionStorage);
-    }
+    const userIdFromSessionStorage = sessionStorage.getItem('Id');
+    setUserId(userIdFromSessionStorage);
+    setIsLoading(true);
+        return () => {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 3000)
+        };
+
   }, []);
 
   useEffect(() => {
@@ -73,8 +84,13 @@ const SubscriptionList = () => {
   }, [amount, discount]);
 
   const handleClickOpenCard = (card) => {
-
     setSelectedCard(card);
+    setEditedSubscription({
+      amount: card.amount,
+      discount: card.discount,
+      totalAmount: card.totalAmount,
+      validity: card.validity 
+    });
     setOpen(true);
   };
 
@@ -90,18 +106,37 @@ const SubscriptionList = () => {
     setOpenSubscriptionModal(false);
   };
 
-
-  const handleEdit = async(id) => {
-    const data={
-      selectedCard}
-    const response= await axios.put(`http://localhost:9999/subscription/update/${id}`,data);
-    if(response.status===200){
-      showSnackbar('Subscription updated successfully.', 'success');
+  const handleEditSubscriptionChange = (event) => {
+    const { name, value } = event.target;
+  
+    const isValidNumber = /^\d*\.?\d*$/.test(value);
+  
+    if (!isValidNumber) {
+      return;
     }
-    setOpen(false);
+  
+    setEditedSubscription((prevData) => ({
+      ...prevData,
+      [name]: value,
+      totalAmount: '',
+    }));
+  
+    if (name === 'amount' || name === 'discount') {
+      const { amount, discount } = editedSubscription;
+      if (amount && discount) {
+        const calculatedPrice = (amount * (100 - discount)) / 100;
+        setEditedSubscription((prevData) => ({
+          ...prevData,
+          totalAmount: calculatedPrice.toFixed(2),
+        }));
+      }
+    }
   };
+  
+  
 
   const handleSubmit = () => {
+    const churchId = 1;
 
     if (!name || !validity || !amount || !discount ||
       name.trim() === '' || isNaN(amount) || isNaN(discount)) {
@@ -122,10 +157,11 @@ const SubscriptionList = () => {
       validity: endDate.toISOString(),
       userId: userId,
       churchId: churchId,
-      totalAmount: totalAmount
+      totalAmount: totalAmount,
+      isActive: "true",
     };
 
-    fetch(`http://localhost:9999/subscription/create/${userId}`, {
+    fetch(`http://localhost:9999/subscription/create/${churchId}/${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -178,9 +214,84 @@ const SubscriptionList = () => {
   }, []);
 
 
+
+  const handleUpdateSubscription = () => {
+  if (!editedSubscription.amount || !editedSubscription.discount || !editedSubscription.totalAmount) {
+    showSnackbar('Please fill in all fields.', 'error');
+    return;
+  }
+
+  fetch(`http://localhost:9999/subscription/update/${selectedCard.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(editedSubscription)
+  })
+    .then(response => {
+      if (response.status === 200) {
+        showSnackbar('Subscription updated successfully', 'success');
+        setIsLoading(true);
+        setTimeout(()=>{
+          setIsLoading(false)
+        },3000)
+        handleCloseCard(); 
+      } else if (response.status === 400) {
+        showSnackbar('There was a problem updating the subscription', 'error');
+      }
+    });
+};
+
   
+  
+
+  const handleisactiveSubscription = (card) => {
+    const id = card.id;
+    const isActive = !card.isActive;
+
+    setIsLoading(true);
+
+    fetch(`http://localhost:9999/subscription/status/${userId}/${id}?isActive=${isActive}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+      .then(response => {
+        if (response.status === 200) {
+          const message = `Subscription ${isActive ? 'Activated' : 'Deactivated'}`;
+          console.log(message);
+          showSnackbar(message, 'success');
+          setIsLoading(false);
+          const updatedCards = subscriptionCards.map(subscription => {
+            if (subscription.id === id) {
+              return {
+                ...subscription,
+                isActive: isActive
+              };
+            }
+            return subscription;
+          });
+          setSubscriptionCards(updatedCards);
+        } else if (response.status === 404) {
+          showSnackbar("User with Subscription Not Found");
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      })
+  };
+
   return (
     <>
+    {isLoading ? (
+      <Grid container>
+      <Grid item xs={12} md={6}></Grid>
+      <Grid item xs={12} md={6} style={{ marginTop: "150px" }}>
+          <img src='https://upload.wikimedia.org/wikipedia/commons/c/c7/Loading_2.gif' style={{ width: "50px", height: "50px" }} alt='loader' />
+      </Grid>
+  </Grid>
+    ) : (
+      <>
       <Box sx={{ maxHeight: 'calc(100vh - 120px)', overflow: 'auto' }}>
         <div style={{ marginTop: "-.3%" }}>
           <Button
@@ -243,19 +354,30 @@ const SubscriptionList = () => {
           {subscriptionCards.map((card, index) => (
             <Card
               key={index}
-              sx={{ minWidth: 215, width: 'calc(25% - 16px)', cursor: 'pointer' }}
-              onClick={() => handleClickOpenCard(card)}
+              sx={{
+                minWidth: 215,
+                width: 'calc(25% - 16px)',
+                cursor: card.isActive ? 'pointer' : 'default', 
+                opacity: card.isActive ? 1 : 0.5, 
+              }}
             >
-              <CardContent >
-              
-                <Typography sx={{ fontSize: 20, fontWeight: 'bold', alignItems: 'center' }} color="text.secondary" gutterBottom>
-                  {card.id}
-                </Typography>
-                <Typography sx={{ fontSize: 20, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
-                  {card.name}
-                </Typography>
-                <Typography sx={{ mb: 1.5, textDecoration: 'line-through' }} color="text.secondary"
-              >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontSize: 20, fontWeight: 'bold', paddingLeft: "20px" }} color="text.secondary" gutterBottom>
+                {card.name}
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={card.isActive}
+                    onChange={() => handleisactiveSubscription(card)}
+                    color="primary"
+                  />
+                }
+                // label={card.isActive ? 'Active' : 'Inactive'}
+                />
+            </Box>
+              <CardContent onClick={card.isActive ? () => handleClickOpenCard(card) : undefined}>
+                <Typography sx={{ mb: 1.5, textDecoration: 'line-through' }} color="text.secondary">
                   Amount : {card.amount} <br />
                 </Typography>
                 <Typography sx={{ mb: 1.5 }} color="text.secondary">
@@ -264,9 +386,13 @@ const SubscriptionList = () => {
                 <Typography variant="h5" component="div">
                   Final Price : {card.totalAmount}
                 </Typography>
-                
+                <Typography sx={{ fontSize: 20, fontWeight: 'bold', alignItems: 'center' }} color="text.secondary" gutterBottom style={{ display: 'none' }}>
+                  {card.validity}
+                </Typography>
+                <Typography sx={{ fontSize: 20, fontWeight: 'bold', color: 'red' }} gutterBottom style={{ display: 'none' }}>
+                  {card.isActive ? 'Status: Active' : 'Status: Inactive'}
+                </Typography>
               </CardContent>
-              
             </Card>
           ))}
         </Box>
@@ -281,32 +407,37 @@ const SubscriptionList = () => {
             <Typography variant="h5" component="div">
               {selectedCard?.name}
             </Typography>
+        
             <TextField
               fullWidth
-              id="standard-basic"
+              id="amount"
+              name="amount"
               label="Amount"
               variant="standard"
-              value={selectedCard?.amount}
-              onChange={(e) => setSelectedCard({ ...selectedCard, amount: e.target.value })}
+              value={editedSubscription.amount}
+              onChange={handleEditSubscriptionChange}
             />
             <TextField
               fullWidth
-              id="standard-basic"
+              id="discount"
+              name="discount"
               label="Discount"
               variant="standard"
-              value={selectedCard?.discount}
-              onChange={(e) => setSelectedCard({ ...selectedCard, discount: e.target.value })}
+              value={editedSubscription.discount}
+              onChange={handleEditSubscriptionChange}
             />
             <TextField
               fullWidth
-              id="standard-basic"
+              id="totalAmount"
+              name="totalAmount"
               label="Final Price"
               variant="standard"
-              value={selectedCard?.totalAmount}
-              onChange={(e) => setSelectedCard({ ...selectedCard, totalAmount: e.target.value })}
+              value={editedSubscription.totalAmount}
+              onChange={handleEditSubscriptionChange}
             />
+
             <div style={{ display: 'flex', justifyContent: 'end', marginTop: '30px', gap: "10px" }}>
-              <Button variant='contained' onClick={()=>handleEdit(selectedCard.id)} style={{ marginLeft: '5px' }}>Edit</Button>
+              <Button variant='contained' onClick={handleUpdateSubscription} style={{ marginLeft: '5px' }}>Update</Button>
               <Button variant='contained' onClick={handleCloseCard}>Close</Button>
             </div>
           </Box>
@@ -322,6 +453,8 @@ const SubscriptionList = () => {
           <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Loading_2.gif" alt="Loading" style={{ width: "5%", height: "10vh" }} />
         </div>
       )}
+      </>
+    )}
     </>
   );
 }

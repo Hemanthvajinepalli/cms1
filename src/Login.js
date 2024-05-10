@@ -23,8 +23,9 @@ const Login = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [fpopen, setfpopen] = useState(false);
-  const[churchName,setchurchname]=useState('caaalval');
+  const[churchName,setchurchname]=useState('Caaalval');
   const navigate = useNavigate();
+  const rolename=sessionStorage.getItem("role");
 
   // snackbar started
   // const handleClick = () => {
@@ -83,7 +84,16 @@ const Login = () => {
         churchName:churchName,
       }
       const response = await axios.post('http://localhost:9999/user/login', data);
-      if (response.status === 200 && response.data.designation==='Super Admin') {
+      const roleid=response.data.roleId;
+      fetch(`http://localhost:9999/role/${roleid}`)
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log(data);
+        const role = data.name;
+        // console.log(role);
+        sessionStorage.setItem('role', role);
+      });
+      if (response.status === 200 && rolename==='SuperAdmin') {
         console.log(response);
         showToast('success', 'Login Successful!');
         const userDetails = response.data.user;
@@ -98,9 +108,9 @@ const Login = () => {
         sessionStorage.setItem('PasswordReset', PasswordReset)
         sessionStorage.setItem('Id', Id);
         sessionStorage.setItem('email', Email);
-        sessionStorage.setItem('role', role);
+        // sessionStorage.setItem('role', role);
         navigate('/Dashboard');
-      }else if (response.status === 200 && response.data.designation==='Admin') {
+      }else if (response.status === 200 && rolename==='Admin') {
         console.log(response);
         showToast('success', 'Login Successful!');
         const userDetails = response.data.user;
@@ -108,10 +118,12 @@ const Login = () => {
         const Id = response.data.id;
         const PasswordReset = response.data.passwordReset
         const Email = response.data.email;
+        const churchid=response.data.chId;
         sessionStorage.setItem('PasswordReset', PasswordReset);
         sessionStorage.setItem('Id', Id);
         sessionStorage.setItem('email', Email);
         sessionStorage.setItem('role', role);
+        sessionStorage.setItem('churchid',churchid);
         navigate('/Dashboard');
       }
        else {
@@ -272,6 +284,7 @@ const Login = () => {
           <button type="submit" className="submit" style={{ marginLeft: '25%', width: '50%', backgroundColor: "rgba(17,106,162,255)", color: "white", cursor: "pointer" }}>
             <b>Submit</b>
           </button>
+          <p style={{ color: 'white', fontWeight: '100', fontSize: '14px', textAlign:'center' }}>Are you a New member? <Link to='/Registration' style={{color:"white",fontWeight:"bold"}}>Register</Link></p>
         </form>
         <br />
       </div>

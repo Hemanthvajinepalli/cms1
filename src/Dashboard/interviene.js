@@ -249,7 +249,7 @@ export default function FullWidthGrid() {
   };
 
   return (
-    <div style={{ overflowY: "auto", maxHeight: "calc(95vh - 3cm)" }}>
+    <div style={{}}>
       {/* <div style={{ display: isLoading? 'block' : 'none' }}>
       <p>Loading...</p>
     </div> */}

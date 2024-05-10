@@ -147,7 +147,7 @@ export default function MediaCard() {
     setseperate(seperatechurch);
     console.log(seperatechurch.image);
 
-    const response1 = await axios.get(`http://localhost:9999/user/getByUser/${userid}`);
+    const response1 = await axios.get(`http://localhost:9999/user/getByUser/${userid}/${churchid}`);
     const seperateuser = response1.data;
     console.log(seperateuser.firstName);
     setAdminName(seperateuser.firstName);

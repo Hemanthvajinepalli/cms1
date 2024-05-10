@@ -5,6 +5,8 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
+import noimage from '../images/noimage.jpg';
+
 
 
 
@@ -33,19 +35,19 @@ const style = {
 export default function GalleryCard() {
 
   const [data, setData] = React.useState([]);
+  const superid=sessionStorage.getItem('Id');
 
 
   React.useEffect(()=>{
-    fetch('http://localhost:9999/church/all')
-    .then(res=>res.json())
-    .then(data=>{
-        setData(data);
-    })
+    fetch(`http://localhost:9999/church/${superid}`)
+      .then(response => response.json())
+      .then(value => setData(value))
+      .catch(error => console.error('Error fetching data:', error));
 },[])
 
   return (
     <>
-    <div style={{ overflowY: "auto", maxHeight: "calc(95vh - 3cm)" }}>
+    <div style={{}}>
         <Grid container spacing={4}>
           {/* Render empty card if no data */}
           {data.length === 0 && (
@@ -53,7 +55,7 @@ export default function GalleryCard() {
               <StyledCard>
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div" style={{ textAlign: 'center', fontSize: '15px', fontFamily: 'sans-serif' }}>
-                    No data available
+                    Add the Gallery of your church
                   </Typography>
                 </CardContent>
               </StyledCard>
@@ -69,7 +71,7 @@ export default function GalleryCard() {
                     height="160"
                     image={value.image ? value.image : "No Image"}
                     title={value.image? "Click here for more details" : "Click here for more details"}
-                    style={{ width: '260px', height: '110px',backgroundColor:"gray",color:"white" }}
+                    style={{ width: '260px', height: '110px',backgroundImage: `url(${noimage})`,color:"white" }}
                     alt={value.image?"Images":"No Image"}
                     onError={"No Image"}
                   />

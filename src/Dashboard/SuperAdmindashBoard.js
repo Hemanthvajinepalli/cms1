@@ -55,7 +55,7 @@ const SuperAdmindashboard = () => {
                     <img src='https://upload.wikimedia.org/wikipedia/commons/c/c7/Loading_2.gif' style={{ width: "50px", height: "50px" }} alt='loader' />
                 </Grid>
             </Grid>) : (
-                <div style={{ overflowY: "auto", maxHeight: "calc(95vh - 3cm)" }}>
+                <div style={{}}>
                     <Grid container spacing={2}>
                         <Grid item xs={2} sm={2}></Grid>
                         <Grid item xs={10} sm={10} md={12}>

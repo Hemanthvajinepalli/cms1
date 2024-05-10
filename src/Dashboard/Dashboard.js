@@ -54,6 +54,7 @@ import CircleNotificationsIcon from '@mui/icons-material/CircleNotifications';
 import GradingIcon from '@mui/icons-material/Grading';
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import UpdateIcon from '@mui/icons-material/Update';
+import Adminmedia from './Adminmedia';
 import Collections from '@mui/icons-material/Collections';
 
 const drawerWidth = 160;
@@ -176,7 +177,7 @@ const DashboardContent = ({ selectedItem }) => {
     case 'Gallery':
       return <Gallerydisplay />;
     case 'Media':
-      return <FullWidthGrid />;
+      return <Adminmedia />;
     case 'Drafts':
       return <Typography variant="h2">Drafts Content</Typography>;
     default:
@@ -209,6 +210,8 @@ export default function Dashboard() {
   });
 
   const role = sessionStorage.getItem("role");
+  const userid=sessionStorage.getItem("userId");
+  const churchid=sessionStorage.getItem("entityid");
   const navigate = useNavigate();
 
   const handleCloseUserMenu = () => {
@@ -361,6 +364,9 @@ export default function Dashboard() {
   };
   // profile start
   const handleOpenProfileModal = () => {
+    fetch(`http://localhost:9999/user/getByUser/${userid}/${churchid}`)
+      .then((response)=>response.json())
+      .then(data=>setProfileData(data))
     setOpenProfileModal(true);
   };
   const handleCloseProfileModal = () => {
@@ -437,7 +443,7 @@ export default function Dashboard() {
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', minHeight: '100vh', overflow: 'hidden', maxHeight: 'calc(100vh - 120px)' }}>
         <Marquee>
-          {role==='Super Admin' && (
+          {role==='SuperAdmin' && (
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, marginLeft: "35%", marginTop: "1%" }}>
             Welcome to Super Admin Dashboard
           </Typography>
@@ -447,7 +453,7 @@ export default function Dashboard() {
             Welcome to Admin Dashboard
           </Typography>
           )}
-          {role==='Super Admin' && (
+          {role==='SuperAdmin' && (
           <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
             <b>{sdetails.firstName}</b> <br />
             {new Date().toLocaleString()}
@@ -750,7 +756,7 @@ export default function Dashboard() {
                   </ListItemButton>
                 </ListItem>
               ))} */}
-              {role === 'Super Admin' && (
+              {role === 'SuperAdmin' && (
                 <>
                   <ListItem key='Home' disablePadding sx={{ display: 'block' }}>
                     <ListItemButton
