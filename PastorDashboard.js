@@ -25,31 +25,32 @@ import { MDBFooter } from 'mdb-react-ui-kit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Advertisement from './Advertisement';
 import ChurchIcon from '@mui/icons-material/Church';
-import SubscriptionIcon from '@mui/icons-material/Subscriptions';
-import EntityIcon from '@mui/icons-material/AccountTree';
-import SubscriptionList from './SubscriptionList';
-import Services from './Services';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import BusinessIcon from '@mui/icons-material/Business';
 import AssessmentIcon from '@mui/icons-material/Assessment';
-import ListIcon from '@mui/icons-material/List';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import Entity from './Entity';
-import MusicVideoIcon from '@mui/icons-material/MusicVideo';
 import Choir from "./Choir";
 import HomeIcon from '@mui/icons-material/Home';
 import FullWidthGrid from './interviene';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import Gallerydisplay from './GalleryInterviene';
 import CollectionsIcon from '@mui/icons-material/Collections';
+import PeopleIcon from '@mui/icons-material/People';
+import InfoIcon from '@mui/icons-material/Info';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import OnlinePredictionIcon from '@mui/icons-material/OnlinePrediction';
+import ReportIcon from '@mui/icons-material/Report';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ChatIcon from '@mui/icons-material/Chat';
 import PermMediaIcon from '@mui/icons-material/PermMedia';
 import Swal from 'sweetalert2';
 import "./Dashboard.css";
 import AdminHome from './Adminhome';
 import Pastorhome from './Pastorhome';
+import PastorAuido from './PastorAudio';
+import PastorAppointments from './PastorAppointments';
 
 
 const drawerWidth = 160;
@@ -153,26 +154,32 @@ const DashboardContent = ({ selectedItem }) => {
   switch (selectedItem) {
     case 'Home':
       return <Pastorhome />;
-    case 'Entity':
-      return <FullWidthGrid />;
-    case 'Subscription':
-      return <SubscriptionList />;
-    case 'Services':
-      return <Services />;
-    case 'Drafts':
-      return <Typography variant="h2">Drafts Content</Typography>;
+    case 'Worship':
+      return <PastorAuido />;
+    case 'About Us':
+      return <Pastorhome />;
+    case 'Management':
+      return <Pastorhome />;
     case 'Choir':
       return <Choir />;
-    case 'Subscription':
-      return <SubscriptionList />;
-    case 'Services':
-      return <Services />;
-    case 'Gallery':
-      return <Gallerydisplay/>;
+    case 'Service Appointments':
+      return <PastorAppointments />;
+    case 'Request status':
+      return <Pastorhome />;
+    case 'Request to Admin':
+      return <Pastorhome />;
     case 'Media':
       return <FullWidthGrid />;
-    case 'Drafts':
-      return <Typography variant="h2">Drafts Content</Typography>;
+    case 'Gallery':
+      return <FullWidthGrid />;
+    case 'Online':
+      return <FullWidthGrid />;
+    case 'Reports':
+      return <FullWidthGrid />;
+    case 'Notifications':
+      return <FullWidthGrid />;
+    case 'Discussion Chat':
+      return <FullWidthGrid />;
     default:
       return null;
   }
@@ -555,26 +562,39 @@ export default function PastorDashboard() {
         </Marquee>
 
         <CssBaseline />
-        <AppBar position="fixed" open={open} sx={{ backgroundColor: 'rgba(17,106,162,255)', height: "45px" }} md={{ height: "25px" }}>
-          <Toolbar >
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{
-                marginRight: 5,
-                ...(open && { display: 'none' }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div">
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent" open={open} sx={{ backgroundColor: 'rgba(17,106,162,255)' }}>
-          <DrawerHeader style={{ marginLeft: "30%" }}>
+        <AppBar position="fixed" open={open} sx={{ backgroundColor: 'rgba(17,106,162,255)', height: "45px" }}>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{
+              marginRight: 5,
+              ...(open && { display: 'none' }),
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap component="div"></Typography>
+        </Toolbar>
+      </AppBar>
+      <Drawer variant="permanent" open={open} sx={{ backgroundColor: 'rgba(17,106,162,255)' ,
+        width: open ? 195 : 60,
+        transition: theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
+        '& .MuiDrawer-paper': {
+          width: open ? 195 : 60,
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+         
+        },
+      }}>
+        <DrawerHeader style={{ marginLeft: "30%" }}>
             <div style={{ marginRight: "60%" }}>
               <ChurchIcon /></div>
             <b style={{ marginLeft: "35%" }}>CMS</b><IconButton onClick={handleDrawerClose}>
@@ -582,74 +602,77 @@ export default function PastorDashboard() {
             </IconButton>
           </DrawerHeader>
           <Divider />
-          <div >
-            <List >
-              {['Home','Entity', 'Subscription', 'Services', 'Reports'].map((text, index) => (
-                <ListItem key={text} disablePadding sx={{ display: 'block' }}>
-                  <ListItemButton
-                    onClick={() => setSelectedItem(text)}
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? 'initial' : 'center',
-                      px: 1,
-                      bgcolor: selectedItem === text ? 'rgba(17,106,162,255)' : 'inherit',
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : 'auto',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {text === 'Home' ? <HomeIcon /> :
-                      text === 'Entity' ? <EntityIcon /> :
-                        text === 'Subscription' ? <SubscriptionIcon /> :
-                          text === 'Services' ? <BusinessIcon /> :
-                            text === 'Reports' ? <AssessmentIcon /> :
-                              <InboxIcon />}
-                    </ListItemIcon>
-                    <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            <Divider />
-            <List >
-              {['Choir', 'List', 'Marketing', 'Gallery', 'Media', 'LogOff'].map((text, index) => (
-                <ListItem key={text} disablePadding sx={{ display: 'block' }}>
-                  <ListItemButton
-                    onClick={() => setSelectedItem(text)}
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? 'initial' : 'center',
-                      px: 1,
-                      bgcolor: selectedItem === text ? 'rgba(17,106,162,255)' : 'inherit',
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : 'auto',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {text === 'Choir' ? <MusicVideoIcon /> :
-                        text === 'List' ? <ListIcon /> :
-                          text === 'Marketing' ? <TrendingUpIcon /> :
-                            text === 'Gallery' ? <CollectionsIcon /> :
-                              text === 'Media' ? <PermMediaIcon /> :
-                                text === 'LogOff' ? <ExitToAppIcon /> :
-                                  <InboxIcon />}
-                    </ListItemIcon>
-                    <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            <Divider />
-          </div>
-        </Drawer>
+          <List>
+          {['Home', 'Worship', 'About Us', 'Management', 'Themes'].map((text) => (
+            <ListItem key={text} disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                onClick={() => setSelectedItem(text)}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? 'initial' : 'center',
+                  px: 1,
+                  bgcolor: selectedItem === text ? 'rgba(17,106,162,255)' : 'inherit',
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {text === 'Home' ? <HomeIcon /> :
+                    text === 'Worship' ? <PeopleIcon /> :
+                      text === 'About Us' ? <InfoIcon /> :
+                        text === 'Management' ? <BusinessIcon /> :
+                          text === 'Themes' ? <AssessmentIcon /> :
+                            <InboxIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <List>
+          {['Choir', 'Appointments', 'Status Requests', 'Admin Requests', 'Gallery', 'Media', 'Online', 'Reports', 'Notifications', 'Chat Discussion', 'LogOff'].map((text) => (
+            <ListItem key={text} disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                onClick={() => setSelectedItem(text)}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? 'initial' : 'center',
+                  px: 1,
+                  bgcolor: selectedItem === text ? 'rgba(17,106,162,255)' : 'inherit',
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {text === 'Choir' ? <MusicNoteIcon /> :
+                    text === 'Appointments' ? <EventNoteIcon /> :
+                      text === 'Status Requests' ? <TrendingUpIcon /> :
+                      text === 'Admin Requests' ? <TrendingUpIcon /> :
+                        text === 'Gallery' ? <CollectionsIcon /> :
+                          text === 'Media' ? <PermMediaIcon /> :
+                            text === 'Online' ? <OnlinePredictionIcon /> :
+                              text === 'Reports' ? <ReportIcon /> :
+                                text === 'Notifications' ? <NotificationsIcon /> :
+                                  text === 'Chat Discussion' ? <ChatIcon /> :
+                                    text === 'LogOff' ? <ExitToAppIcon /> :
+                                      <InboxIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+      </Drawer>
         <Box component="main" sx={{ flexGrow: 1, pt: 1 }} style={{ overflowY: "auto", maxHeight: "calc(95vh - 3cm)" }}>
           {/* <Pastorhome/> */}
           <DashboardContent selectedItem={selectedItem} />
