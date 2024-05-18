@@ -9,6 +9,8 @@ import Entity from './Dashboard/Entity';
 import Login from './Login';
 import MemberRegistration from './Registration';
 import AdminDashboard from './Dashboard/AdminDashboard';
+import Memberdashboard from './Dashboard/Memberdashboard';
+import Pastorhome from './Pastor/Pastorhome';
 function App() {
   return (
         <Routes>
@@ -21,6 +23,8 @@ function App() {
           <Route path="/Services" element={<Services />} />
           <Route path='/Admin' element={<AdminDashboard/>}/>
           <Route path='/Registration' element={<MemberRegistration/>}/>
+          <Route path='/Member' element={<Memberdashboard/>}/>
+          <Route path='/Pastor' element={<Pastorhome/>}/>
           {/* <Route path='/calendar' element={<MyApp/>}/> */}
         </Routes>
   );

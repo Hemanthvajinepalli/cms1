@@ -402,12 +402,7 @@ export default function Dashboard() {
         secondName: profileData.secondName,
         designation: profileData.designation,
       })], { type: 'application/json' }));
-
-
       formData.append('file', profileData.image);
-
-
-
       const response = await fetch(`http://localhost:9999/user/updateProfile/${loggedin}`, {
         method: 'PUT',
         body: formData,
@@ -586,6 +581,116 @@ export default function Dashboard() {
           )}
           {/* Admin userdropdown */}
           {role==='Admin' && (
+            <>
+          <IconButton
+            aria-label="account of current user"
+            aria-controls="menu-appbar"
+            aria-haspopup="true"
+            onClick={handleOpenUserMenu}
+            color="inherit"
+            style={{ marginTop: "20px" }}
+          >
+            <AccountCircleIcon style={{ width: "35px", height: "35px" }} />
+            <ArrowDropDownIcon />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorElUser}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorElUser)}
+            onClose={handleCloseUserMenu}
+          >
+            {settings.map((item, index) => (
+              <MenuItem key={index} onClick={(event) => handleOpenUserMenu(event, index)}>
+                {item}
+              </MenuItem>
+            ))}
+            <Modal
+              open={openProfileModal}
+              onClose={handleCloseProfileModal}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Paper sx={{ position: 'absolute', width: 800, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+                <Typography variant="h6" component="h2" gutterBottom>
+                  <h3 style={{ textAlign: "center" }}>Profile Details</h3>
+                </Typography>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="fname"
+                    label="First Name"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  />
+                  <TextField
+                    id="email"
+                    label="Email"
+                    type="email"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.email}
+                    disabled
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="phn"
+                    label="Phone Number"
+                    type="number"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.phoneNumber}
+                    disabled
+                  />
+                  <TextField
+                    id="designation"
+                    label="Designation"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%', marginLeft: "0.2cm" }}
+                    value={profileData.designation}
+                    onChange={(e) => setProfileData({ ...profileData, designation: e.target.value })}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '33.33%', marginTop: "0.7cm" }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ marginBottom: '0.5rem', marginLeft: "0.3cm" }}
+                      ref={fileInputRef}
+                    />
+                    {previewImage && (
+                      <div style={{ width: '35px', height: '35px', overflow: 'hidden', borderRadius: '50%', marginLeft: "5cm", marginTop: "-1cm" }}>
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <br />
+                <Button variant='contained' onClick={handleUpdateProfile} style={{ marginLeft: "6cm" }}>Update</Button>
+                <Button variant='contained' onClick={handleCloseProfileModal} style={{ marginLeft: "1cm" }}>Cancel</Button>
+              </Paper>
+            </Modal>
+          </Menu>
+          </>
+          )}
+          {/* Member dashboard */}
+          {role==='Member' && (
             <>
           <IconButton
             aria-label="account of current user"

@@ -1,0 +1,43 @@
+/* Default background image style */
+.choir-background {
+    width: 90%;
+    height: 70%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  /* Media query for smaller screens (e.g., tablets) */
+  @media screen and (max-width: 1024px) {
+    .choir-background {
+      /* Adjust width and height for tablets */
+      width: 90%;
+      height: 50%;
+    }
+  }
+  
+  /* Media query for even smaller screens (e.g., mobile phones) */
+  @media screen and (max-width: 600px) {
+    .choir-background {
+      /* Adjust width and height for mobile phones */
+      width: 90%;
+      height: 60%;
+    }
+  }
+  @media screen and (max-width: 600px) {
+  .audio-grip{
+       padding-top:  100%;
+       margin-top: 50%;
+  }
+}
+@media screen and (max-width: 900px) {
+  .audio-grip{
+       padding-top: 100%;
+       margin-top: 50%;
+  }
+}
+
+
+
+
+  

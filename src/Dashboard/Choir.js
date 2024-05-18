@@ -182,13 +182,51 @@
 
 
 
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { Button, Box, Modal, TextField, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import axios from 'axios';
+import CloseIcon from '@mui/icons-material/Close';
+import Snackbar from '@mui/material/Snackbar';
+
 
 const Choir = () => {
   const [open, setOpen] = useState(false);
   const [showMemberFields, setShowMemberFields] = useState(false);
+  const[snackopen,setsnackopen]=React.useState(false);
+  const[snackstatus,setsnackstatus]=React.useState('');
+  const[message,setmessage]=React.useState('');
+  const fileInputRef = useRef(null);
+  const userid=sessionStorage.getItem("Id");
+  const role=sessionStorage.getItem('role');
+  const churchid=sessionStorage.getItem('churchid');
+  const[choirimage,setchoirimage]=React.useState({
+    choirMemberName:'',
+    phoneNumber:'',
+    roleName:'',
+    imageUrl:'',
+  });
+  const[choirdata,setchoirdata]=React.useState({
+    imageUrl:'',
+
+  })
+  const [files, setFiles] = useState([]);
+
+  const action = (
+    <React.Fragment>
+      {/* <Button color="secondary" size="small" onClick={handleClose}>
+        UNDO
+      </Button> */}
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={()=>setsnackopen(false)}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
 
   const handleOpen = () => {
     setOpen(true);
@@ -196,12 +234,125 @@ const Choir = () => {
 
   const handleClose = () => {
     setOpen(false);
+    // setsnackopen(false);
   };
   const handleShowMemberFields = () => {
     setShowMemberFields(true);
   };
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setchoirdata({ ...choirdata, imageUrl: file });
+      };
+      reader.readAsDataURL(file);
+      setchoirdata({ ...choirdata, imageUrl: file });
+    }
+  };
+  const handlememberImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setchoirimage({ ...choirimage, imageUrl: file });
+      setFiles([...files, file]);
+    }
+  };
+  const choirmemberupload = async () => {
+    const formData = new FormData();
+    const members = [{
+      choirMemberName: choirimage.choirMemberName,
+      memberRoleName: choirimage.roleName,
+      phoneNumber: choirimage.phoneNumber,
+    }];
+    
+    formData.append('members', new Blob([JSON.stringify(members)], { type: 'application/json' }));
+    files.forEach((file, index) => {
+      formData.append('file', file);
+    });
+
+    try {
+      const response = await axios.post(`http://localhost:9999/choir/create/member/${userid}/${churchid}/6`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      if (response.status === 201) {
+        setmessage(response.data.success);
+        setsnackopen(true);
+      } else {
+        setmessage('Failed to add choir');
+        setsnackopen(true);
+      }
+    } catch (error) {
+      setmessage(error.message);
+      setsnackopen(true);
+    }
+  };
+
+  // const handlechoirmember=async()=>{
+  //   const formData = new FormData();
+  //   formData.append("choirMemberName",choirdata.choirMemberName);
+  //   formData.append("phoneNumber",choirdata.phoneNumber);
+  //   formData.append("roleName",choirdata.roleName);
+  //   formData.append("file",choirdata.imageUrl);
+  //   try{
+  //     const res = await axios.post(`http://localhost:9999/choir/create/member/${userId}/${churchId}/${choirId}`,formData,{
+  //       headers: {
+  //         "Content-Type": "multipart/form-data", 
+  //         }
+  //     });
+  //     console.log(res.data);
+  //   }
+  //   catch(error){
+  //     console.log(error);
+  //   }
+  // }
+
+  const choirimageupload = async () => {
+    const formData = new FormData();
+
+    try {
+      formData.append('file', choirdata.imageUrl);
+      const response = await axios.post(`http://localhost:9999/choir/create/${userid}/${churchid}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });  
+      if (response.status===201) {
+        setmessage(response.data.success);
+        setsnackstatus('success');
+        setsnackopen(true);
+        console.log(response);
+        sessionStorage.setItem("choirid");
+      } else {
+        setmessage('Failed to add choir');
+        setsnackstatus('error');
+        setsnackopen(true);
+      }
+    } catch (error) {
+      setmessage(error.message);
+      setsnackopen(true);
+    }
+  }
+  
   return (
     <>
+    {snackopen && (
+        <div style={{ display: "flex", justifyContent: "end" }}>
+          <div>
+            <Snackbar
+              open={snackopen}
+              autoHideDuration={3000}
+              message={message}
+              action={action}
+              onClose={() => setsnackopen(false)}
+              style={{
+                position: "relative", top: "0px", left: "0px",backgroundColor:snackstatus=== 'success'? 'green':'red'
+              }}
+            />
+          </div>
+        </div>
+      )}
       <Box sx={{ maxHeight: 'calc(100vh - 120px)', overflow: 'auto' }}>
         <Button
           sx={{
@@ -242,21 +393,38 @@ const Choir = () => {
             p: 4,
           }}
         >
-          <TextField label="Image" variant="standard" type='file' fullWidth sx={{ mb: 2 }} />
+           <input
+                      type="file"
+                      accept="image"
+                      style={{ marginBottom: '0.5rem', marginLeft: "0.3cm" }}
+                      onChange={(event) => handleImageUpload(event)}
+                      ref={fileInputRef}
+                    />
+                    <button onClick={choirimageupload}>Upload</button>
+          {/* <TextField label="Image" variant="standard" type='file' onChange={(e)=>setchoirdata({ ...choirdata, image: file })} fullWidth sx={{ mb: 2 }} /> */}
           <IconButton onClick={handleShowMemberFields}>
             <AddIcon />
             <span style={{fontSize: "15px"}}>Add Member Details</span>
           </IconButton> <br/>
           {showMemberFields && (
             <>
-              <TextField label="Image" variant="standard" type='file' fullWidth sx={{ mb: 2 }} />
-              <TextField label="Name" variant="standard" fullWidth sx={{ mb: 2 }} />
-              <TextField label="Mobile Number" variant="standard" fullWidth sx={{ mb: 2 }} />
-              <TextField label="Role" variant="standard" fullWidth sx={{ mb: 2 }} />
+              {/* <TextField label="Image" variant="standard"  type='file' fullWidth sx={{ mb: 2 }} /> */}
+              <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlememberImageUpload}
+                      style={{ marginBottom: '0.5rem', marginLeft: "0.3cm" }}
+                      ref={fileInputRef}
+                    />
+              <TextField label="Name" variant="standard" value={choirimage.choirMemberName}
+                    onChange={(e) => setchoirimage({ ...choirimage, choirMemberName: e.target.value })} fullWidth sx={{ mb: 2 }} />
+              <TextField label="Mobile Number" variant="standard" value={choirimage.phoneNumber}
+                    onChange={(e) => setchoirimage({ ...choirimage, phoneNumber: e.target.value })} fullWidth sx={{ mb: 2 }} />
+              <TextField label="Role" variant="standard" value={choirimage.roleName} onChange={(e)=>setchoirimage({...choirimage,roleName:e.target.value})} fullWidth sx={{ mb: 2 }} />
             </>
           )}
           <div style={{gap: "10px"}}>
-          <Button variant="contained" onClick={handleClose}>
+          <Button variant="contained" onClick={choirmemberupload}>
             Add Choir
           </Button>
           <Button variant="contained" onClick={handleClose}>

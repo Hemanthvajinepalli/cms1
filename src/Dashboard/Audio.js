@@ -67,6 +67,13 @@ const Worship = () => {
           style={{ borderRadius: "2rem" }}
         >
           <h3 style={{ color: "black" }}> Pastor's Audio </h3>
+          <audio controls>
+              <source
+                src={URL.createObjectURL(new Blob([audioData]))}
+                type="audio/mpeg"
+                style={{ width: "10%" }} />
+              Your browser does not support the audio element.
+            </audio>
           {audioData && (
             <audio controls>
               <source
