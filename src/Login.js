@@ -81,7 +81,7 @@ const Login = () => {
       const data = {
         userName: loginIdentifier,
         password,
-        churchName:churchName,
+       churchName:churchName,
       }
       const response = await axios.post('http://localhost:9999/user/login', data);
       const roleid=response.data.roleId;

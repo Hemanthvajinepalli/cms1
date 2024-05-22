@@ -171,7 +171,7 @@ export default function FullWidthGrid() {
         'Content-Type': 'multipart/form-data',
       },
     });
-    if(response.data==='Otp is Verified...'){
+    if(response.status===200){
       setShowEmailInput(false);
       document.getElementById('emailverify').innerHTML="Verified"
       document.getElementById('emailverify').style.backgroundColor= "green";

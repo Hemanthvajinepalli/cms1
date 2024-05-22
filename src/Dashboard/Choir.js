@@ -186,17 +186,49 @@ import React, { useState,useRef } from 'react';
 import { Button, Box, Modal, TextField, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Snackbar from '@mui/material/Snackbar';
+import noimage from '../images/noimage.jpg';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Grid from '@mui/material/Grid';
 
+const StyledCard = styled(Card)({
+  maxWidth: 250,
+  maxHeight: 150,
+  transition: 'transform 0.3s',
+  '&:hover': {
+    transform: 'scale(1.1)',
+  },
+});
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 const Choir = () => {
   const [open, setOpen] = useState(false);
+  const [choirmodalopen, setchoirmodalOpen] = React.useState(false);
   const [showMemberFields, setShowMemberFields] = useState(false);
   const[snackopen,setsnackopen]=React.useState(false);
   const[snackstatus,setsnackstatus]=React.useState('');
   const[message,setmessage]=React.useState('');
   const fileInputRef = useRef(null);
+  const[choirid,setchoirid]=React.useState('');
+  const[createdBy,setcreatedby]=React.useState('');
+  const[choirmembername,setchoirmembername]=React.useState('');
+  const[choirmember,setchoirmember]=React.useState([]);
   const userid=sessionStorage.getItem("Id");
   const role=sessionStorage.getItem('role');
   const churchid=sessionStorage.getItem('churchid');
@@ -211,6 +243,24 @@ const Choir = () => {
 
   })
   const [files, setFiles] = useState([]);
+
+  React.useEffect(()=>{
+    fetch(`http://localhost:9999/choir/view/${churchid}`)
+    .then(response=>response.json())
+    .then(data=>{
+      if(data){
+        const value = Array.isArray(data) ? data : [data];
+          setchoirmember(value);
+          const seperatechoir=data;
+          setchoirid(seperatechoir.choirId);
+          setcreatedby(seperatechoir.createdBy);
+          setchoirmembername(seperatechoir.choirMembers.choirMemberName);
+      }else{
+        setchoirmember([]);
+      }
+    })
+    .catch(error=>alert(error))
+  },[])
 
   const action = (
     <React.Fragment>
@@ -236,6 +286,9 @@ const Choir = () => {
     setOpen(false);
     // setsnackopen(false);
   };
+  const handlechoiropen = () => setchoirmodalOpen(true);
+  const handlechoirclose = () => setchoirmodalOpen(false);
+
   const handleShowMemberFields = () => {
     setShowMemberFields(true);
   };
@@ -366,12 +419,67 @@ const Choir = () => {
         >
           Add Choir
         </Button>
-        <div style={{ marginLeft: '20%', marginTop: '2%' }}>
+        {/* <div style={{ marginLeft: '20%', marginTop: '2%' }}>
           <img
             src="https://gogoanow.com/wp-content/uploads/2018/03/choir-singing.jpg"
             alt=""
             style={{ width: '70%', height: '60vh', borderRadius: '2rem' }}
           />
+        </div> */}
+        <div>
+          <Grid container spacing={2}>
+        {choirmember.map((value)=>(
+            <>
+            <Grid item xs={12} sm={12} md={1}></Grid>
+            <Grid item xs={12} sm={12} md={3}>
+            <StyledCard onClick={handlechoiropen}>
+                  <CardMedia
+                    component={value.imageUrl ? "img" : ""}
+                    height="160"
+                    image={value.imageUrl ? value.imageUrl : "No Image"}
+                    title={value.imageUrl ? "Click here for more details" : "Click here for more details"}
+                    style={{ width: '260px', height: '110px', backgroundImage: `url(${noimage})`, color: "white" }}
+                    alt={value.imageUrl ? "Images" : "No Image"}
+                    // onError={"No Image"}
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="div" style={{ textAlign: 'center', fontSize: '15px', fontFamily: 'sans-serif' }}>
+                      {value.choirId}
+                    </Typography>
+                  </CardContent>
+                </StyledCard> 
+                </Grid>
+                <Modal
+        open={choirmodalopen}
+        onClose={handlechoirclose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+        <Typography gutterBottom variant="h5" component="div" style={{ textAlign: 'center', fontSize: '15px', fontFamily: 'sans-serif',paddingBottom:"10px" }}>
+              ChoirMembers
+        </Typography>
+        
+        {value.choirMembers.map(member=>(
+          <>
+          <div style={{display:"flex",justifyContent:"space-evenly"}}> 
+        <TextField id="standard-basic" label="Choir Id" value={member.choirMemberId} variant="standard" />
+        <TextField id="standard-basic" label="Member Name" value={member.choirMemberName} variant="standard" />
+        </div>
+          <div style={{display:"flex",justifyContent:"space-evenly"}}>
+                  <TextField id="standard-basic" label="Member Name" value={member.memberRoleName} variant="standard" />
+                  <TextField id="standard-basic" label="Member Name" value={member.phoneNumber} variant="standard" />
+          </div>
+          </>
+
+        ))}
+
+        </Box>
+      </Modal>
+            </>
+          )
+        )}
+        </Grid>
         </div>
       </Box>
       <Modal

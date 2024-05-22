@@ -9,7 +9,7 @@ import Entity from './Dashboard/Entity';
 import Login from './Login';
 import MemberRegistration from './Registration';
 import AdminDashboard from './Dashboard/AdminDashboard';
-import Memberdashboard from './Dashboard/Memberdashboard';
+import Memberdashboard from './Member/Memberdashboard';
 import Pastorhome from './Pastor/Pastorhome';
 function App() {
   return (

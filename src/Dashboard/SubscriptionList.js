@@ -161,7 +161,7 @@ const SubscriptionList = () => {
       isActive: "true",
     };
 
-    fetch(`http://localhost:9999/subscription/create/${churchId}/${userId}`, {
+    fetch(`http://localhost:9999/subscription/create/${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

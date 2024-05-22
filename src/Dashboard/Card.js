@@ -60,6 +60,7 @@ export default function MediaCard() {
   const [image, setimage] = React.useState('');
   const [showEmailInput, setShowEmailInput] = React.useState(false);
   const [showMobileInput, setShowMobileInput] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [mobotp, setMobotp] = React.useState('');
   const [seperate, setseperate] = React.useState([]);
   const [seperateimage, setseperateimage] = React.useState([]);
@@ -101,7 +102,7 @@ export default function MediaCard() {
   
     formData.append('file', selectedFileName);
 
-      const response = await fetch(`http://localhost:9999/church/updateUser/${churchid}`, {
+      const response = await fetch(`http://localhost:9999/church/update/${churchid}`, {
         method: 'PUT',
         body: formData,
       });
@@ -164,6 +165,12 @@ export default function MediaCard() {
       .then(response => response.json())
       .then(value => setData(value))
       .catch(error => console.error('Error fetching data:', error));
+      setIsLoading(true);
+        return () => {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 3000)
+        };
   }, [superid]);
 
   const handleButtonClick = () => {
@@ -172,6 +179,12 @@ export default function MediaCard() {
 
   return (
     <>
+    {isLoading ? (<Grid container>
+                <Grid item xs={12} md={6}></Grid>
+                <Grid item xs={12} md={6} style={{ marginTop: "100px" }}>
+                    <img src='https://upload.wikimedia.org/wikipedia/commons/c/c7/Loading_2.gif' style={{ width: "50px", height: "50px" }} alt='loader' />
+                </Grid>
+            </Grid>):(
       <div>
         <Grid container spacing={4}>
           {data.length === 0 && (
@@ -266,6 +279,7 @@ export default function MediaCard() {
         </Grid>
 
       </div>
+            )}
     </>
   );
 }

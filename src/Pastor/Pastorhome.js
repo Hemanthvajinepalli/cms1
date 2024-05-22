@@ -36,7 +36,7 @@ const Pastorhome = () => {
                             </div>
                         </Grid>
                         <Grid item xs={12} sm={12} md={5}>
-                            <div style={{width:"10cm",marginLeft:"5cm"}}>
+                            <div style={{width:"10cm",marginLeft:"1cm"}}>
                             <UserCalendar />
                             </div>
                         </Grid>

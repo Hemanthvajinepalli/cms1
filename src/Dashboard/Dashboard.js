@@ -47,6 +47,7 @@ import Gallerydisplay from './GalleryInterviene';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import PermMediaIcon from '@mui/icons-material/PermMedia';
 import Swal from 'sweetalert2';
+import Memberdashboard from '../Member/Memberdashboard';
 import "./Dashboard.css";
 import SuperAdmindashboard from './SuperAdmindashBoard';
 import AdminHome from './Adminhome';
@@ -55,6 +56,9 @@ import GradingIcon from '@mui/icons-material/Grading';
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import UpdateIcon from '@mui/icons-material/Update';
 import Adminmedia from './Adminmedia';
+import Pastorhome from '../Pastor/Pastorhome';
+import Pastorchoir from '../Pastor/Pastorchoir';
+import Creatinglink from '../Admin/Creatinglink';
 import Collections from '@mui/icons-material/Collections';
 
 const drawerWidth = 160;
@@ -160,16 +164,24 @@ const DashboardContent = ({ selectedItem }) => {
       return <SuperAdmindashboard />;
       case 'AdminHome':
       return <AdminHome/>;
+      case 'PastorHome':
+      return <Pastorhome/>;
+      case 'Memberhome':
+        return <Memberdashboard/>;
     case 'Entity':
       return <FullWidthGrid />;
     case 'Subscription':
       return <SubscriptionList />;
     case 'Services':
       return <Services />;
+      case 'Online':
+        return <Creatinglink/>
     case 'Drafts':
       return <Typography variant="h2">Drafts Content</Typography>;
     case 'Choir':
       return <Choir />;
+      case 'Pastorchoir':
+      return <Pastorchoir />;
     case 'Subscription':
       return <SubscriptionList />;
     case 'Services':
@@ -448,6 +460,11 @@ export default function Dashboard() {
             Welcome to Admin Dashboard
           </Typography>
           )}
+          {role==='Pastor' && (
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, marginLeft: "35%", marginTop: "1%" }}>
+            Welcome to Pastor Dashboard
+          </Typography>
+          )}
           {role==='SuperAdmin' && (
           <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
             <b>{sdetails.firstName}</b> <br />
@@ -456,7 +473,13 @@ export default function Dashboard() {
           )}
           {role==='Admin' && (
           <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
-            <b>Admin Nmae</b> <br />
+            <b>Admin Name</b> <br />
+            {new Date().toLocaleString()}
+          </Typography>
+          )}
+          {role==='Pastor' && (
+          <Typography variant="subtitle1" noWrap component="div" style={{ color: "white", marginLeft: "5%", marginTop: "1.5%", fontSize: "0.7rem" }}>
+            <b>Pastor Name</b> <br />
             {new Date().toLocaleString()}
           </Typography>
           )}
@@ -689,8 +712,118 @@ export default function Dashboard() {
           </Menu>
           </>
           )}
-          {/* Member dashboard */}
+          {/* Member dropdown */}
           {role==='Member' && (
+            <>
+          <IconButton
+            aria-label="account of current user"
+            aria-controls="menu-appbar"
+            aria-haspopup="true"
+            onClick={handleOpenUserMenu}
+            color="inherit"
+            style={{ marginTop: "20px" }}
+          >
+            <AccountCircleIcon style={{ width: "35px", height: "35px" }} />
+            <ArrowDropDownIcon />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorElUser}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorElUser)}
+            onClose={handleCloseUserMenu}
+          >
+            {settings.map((item, index) => (
+              <MenuItem key={index} onClick={(event) => handleOpenUserMenu(event, index)}>
+                {item}
+              </MenuItem>
+            ))}
+            <Modal
+              open={openProfileModal}
+              onClose={handleCloseProfileModal}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Paper sx={{ position: 'absolute', width: 800, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+                <Typography variant="h6" component="h2" gutterBottom>
+                  <h3 style={{ textAlign: "center" }}>Profile Details</h3>
+                </Typography>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="fname"
+                    label="First Name"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  />
+                  <TextField
+                    id="email"
+                    label="Email"
+                    type="email"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.email}
+                    disabled
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                  <TextField
+                    id="phn"
+                    label="Phone Number"
+                    type="number"
+                    variant="standard"
+                    style={{ width: '33.33%' }}
+                    value={profileData.phoneNumber}
+                    disabled
+                  />
+                  <TextField
+                    id="designation"
+                    label="Designation"
+                    type="text"
+                    variant="standard"
+                    style={{ width: '33.33%', marginLeft: "0.2cm" }}
+                    value={profileData.designation}
+                    onChange={(e) => setProfileData({ ...profileData, designation: e.target.value })}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '33.33%', marginTop: "0.7cm" }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ marginBottom: '0.5rem', marginLeft: "0.3cm" }}
+                      ref={fileInputRef}
+                    />
+                    {previewImage && (
+                      <div style={{ width: '35px', height: '35px', overflow: 'hidden', borderRadius: '50%', marginLeft: "5cm", marginTop: "-1cm" }}>
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <br />
+                <Button variant='contained' onClick={handleUpdateProfile} style={{ marginLeft: "6cm" }}>Update</Button>
+                <Button variant='contained' onClick={handleCloseProfileModal} style={{ marginLeft: "1cm" }}>Cancel</Button>
+              </Paper>
+            </Modal>
+          </Menu>
+          </>
+          )}
+          {/* Pastor dropdown  */}
+          {role==='Pastor' && (
             <>
           <IconButton
             aria-label="account of current user"
@@ -1331,6 +1464,504 @@ export default function Dashboard() {
                         <TrendingUpIcon />
                       </ListItemIcon>
                       <ListItemText primary='Marketing' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Gallery' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Gallery')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Gallery' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CollectionsIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Gallery' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Media' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Media')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Media' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <PermMediaIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Media' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='LogOff' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('LogOff')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'LogOff' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ExitToAppIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='LogOff' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
+              {/* Pastor sidebar */}
+              {role === 'Pastor' && (
+                <>
+                  <ListItem key='PastorHome' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('PastorHome')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'PastorHome' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <HomeIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Home' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Services' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Services')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Services' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <BusinessIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Service Appointments' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Reports' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Reports')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Reports' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AssessmentIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Requests' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Requests')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Requests' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <GradingIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Request Admin' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='RequestStatus' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('RequestStatus')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'RequestStatus' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <UpdateIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='RequestStatus' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  
+                  <Divider />
+                  <ListItem key='Pastorchoir' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Pastorchoir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Pastorchoir' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <MusicVideoIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Choir' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Notifications' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Choir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Notifications' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CircleNotificationsIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Notifications' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Online' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Online')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Online' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AddLinkIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Online' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Gallery' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Gallery')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Gallery' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CollectionsIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Gallery' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Media' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Media')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Media' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <PermMediaIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Media' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='LogOff' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('LogOff')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'LogOff' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ExitToAppIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='LogOff' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
+              {/* Member Sidebar */}
+              {role === 'Member' && (
+                <>
+                  <ListItem key='Memberhome' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Memberhome')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Memberhome' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <HomeIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Home' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Services' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Services')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Services' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <BusinessIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Service Appointments' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Reports' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Reports')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Reports' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AssessmentIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Requests' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Requests')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Requests' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <GradingIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Request Admin' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='RequestStatus' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('RequestStatus')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'RequestStatus' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <UpdateIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='RequestStatus' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  
+                  <Divider />
+                  <ListItem key='Pastorchoir' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Pastorchoir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Pastorchoir' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <MusicVideoIcon />
+                      </ListItemIcon>
+                      <ListItemText primary='Choir' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Notifications' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Choir')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Notifications' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CircleNotificationsIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Notifications' sx={{ opacity: open ? 1 : 0 }} />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem key='Online' disablePadding sx={{ display: 'block' }}>
+                    <ListItemButton
+                      onClick={() => setSelectedItem('Online')}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 1,
+                        bgcolor: selectedItem === 'Online' ? 'rgba(17,106,162,255)' : 'inherit',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AddLinkIcon/>
+                      </ListItemIcon>
+                      <ListItemText primary='Online' sx={{ opacity: open ? 1 : 0 }} />
                     </ListItemButton>
                   </ListItem>
                   <ListItem key='Gallery' disablePadding sx={{ display: 'block' }}>
